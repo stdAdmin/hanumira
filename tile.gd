@@ -5,15 +5,24 @@ class_name Tile
 var movement_vector
 var matrix_pos: Vector2
 var end_pos: Vector2
+var tile_size: Vector2
 
-@export var tile_size: Vector2 = Vector2 (64,64) 
-
+# boundary status, initially set by game., modified by rotation
+var visible_left: bool = false
+var visible_up: bool = false
+var visible_right: bool = false
+var visible_down: bool = false
 
 var current_cnt_movement: float = 0
-var current_cnt_joystick: float = 0
+var current_cnt_joystick_move: float = 0
+var current_cnt_joystick_press: float = 0
+
+var left_joystick_pressed = false
+var right_joystick_pressed = false
 
 @export var speed_movement: float = 0.03
-@export var speed_joystick: float = 0.2
+@export var speed_joystick_move: float = 0.2
+@export var speed_joystick_press: float = 0.1
 
 var tile_matrix_ref: Array[Array] # set during instantiate
 signal tile_movement_complete(data: Vector2)  # vector indicates direction
@@ -28,12 +37,16 @@ func _ready() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	# check the joystick presses independent of the move cycle, TODO: maybe same for movement
+	left_joystick_pressed = Input.is_action_pressed("cr_left_button")
+	right_joystick_pressed = Input.is_action_pressed("cr_right_button")
+
 	var cur_matrix_pos =  position / tile_size
 	# movement via joystick, only when actively_controlled
 	if being_in_focus:
-		current_cnt_joystick += speed_joystick
-		if  current_cnt_joystick >=1:
-			current_cnt_joystick = 0
+		current_cnt_joystick_move += speed_joystick_move
+		if  current_cnt_joystick_move >=1:
+			current_cnt_joystick_move = 0
 			# being left or right?
 			var y_motion
 			if movement_vector.x > 0:			
@@ -48,6 +61,32 @@ func _process(delta: float) -> void:
 					tile_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
 					tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] = self
 					matrix_pos = next_joy_matrix_pos				
+
+		current_cnt_joystick_press += speed_joystick_press
+		if  current_cnt_joystick_press >=1:
+			current_cnt_joystick_press = 0
+			# being left or right?
+			if movement_vector.x > 0:			
+				if left_joystick_pressed:
+					left_joystick_pressed = 0.0
+					var temp = visible_left
+					visible_left = visible_down
+					visible_down = visible_right
+					visible_right = visible_up
+					visible_up = temp
+			else:
+				if right_joystick_pressed:
+					right_joystick_pressed = 0.0
+					var temp = visible_left
+					visible_left = visible_down
+					visible_down = visible_right
+					visible_right = visible_up
+					visible_up = temp
+			
+	$boundary_left.visible = visible_left
+	$boundary_up.visible = visible_up
+	$boundary_right.visible = visible_right
+	$boundary_down.visible = visible_down
 	
 	# movement via time
 	cur_matrix_pos =  position / tile_size

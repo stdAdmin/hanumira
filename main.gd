@@ -1,4 +1,5 @@
 extends Node2D
+class_name Main
 
 # sequence of appearing is left tile, top blob, right tile, bottom blob in spawn_time deltas
 @export var spawn_time = 5.0
@@ -71,7 +72,22 @@ func _process(delta: float) -> void:
 func spawn_tile():
 	if active_tile_blob == 1 || active_tile_blob == 3:
 		var tile: Tile = NewTile.instantiate()
+		# percentage distribution of tile type (border lines)
+		var tile_type = randf()
+		# 2 parallele = 5%
+		if tile_type < 0.25:
+			tile.visible_left = true
+			tile.visible_right = true
+		# a corner = 10%
+		elif tile_type >= 0.25 && tile_type <0.50:
+			tile.visible_right = true
+			tile.visible_down = true
+		# one side = 20%
+		elif tile_type >= 0.50 && tile_type <0.75:
+			tile.visible_down = true
+			
 		tile.tile_matrix_ref = tile_matrix
+		tile.tile_size = Vector2(64, 64)
 		tile.tile_movement_complete.connect(_on_tile_movement_complete)
 		# left2right
 		if active_tile_blob == 1:
@@ -80,7 +96,7 @@ func spawn_tile():
 			tile.matrix_pos = start_pos_left2right
 			tile.end_pos = end_pos_left2right
 			active_tile_blob = 3
-			#right2left
+		#right2left
 		else:
 			cur_tile_right2left = tile
 			tile.movement_vector = movement_vector_right2left

@@ -8,8 +8,51 @@
 gradient = SubResource("Gradient_im0tn")
 fill = 1
 
+[sub_resource type="Gradient" id="Gradient_n3f48"]
+colors = PackedColorArray(0, 0, 0, 1, 0.101960786, 0.5137255, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_vx4y2"]
+gradient = SubResource("Gradient_n3f48")
+width = 10
+metadata/_snap_enabled = true
+metadata/_snap_count = 11
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_a2t34"]
+gradient = SubResource("Gradient_n3f48")
+height = 10
+metadata/_snap_enabled = true
+metadata/_snap_count = 11
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tfor0"]
+gradient = SubResource("Gradient_n3f48")
+width = 10
+metadata/_snap_enabled = true
+metadata/_snap_count = 11
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_cpv6t"]
+gradient = SubResource("Gradient_n3f48")
+height = 10
+metadata/_snap_enabled = true
+metadata/_snap_count = 11
+
 [node name="tile" type="Node2D" unique_id=626490859]
 script = ExtResource("1_n3f48")
 
 [node name="sprite2D" type="Sprite2D" parent="." unique_id=875051464]
 texture = SubResource("GradientTexture2D_xfwl5")
+
+[node name="boundary_left" type="Sprite2D" parent="." unique_id=1968027441]
+texture = SubResource("GradientTexture2D_vx4y2")
+offset = Vector2(-27, 0)
+
+[node name="boundary_up" type="Sprite2D" parent="." unique_id=1949242614]
+texture = SubResource("GradientTexture2D_a2t34")
+offset = Vector2(0, -27)
+
+[node name="boundary_right" type="Sprite2D" parent="." unique_id=454018661]
+texture = SubResource("GradientTexture2D_tfor0")
+offset = Vector2(27, 0)
+
+[node name="boundary_down" type="Sprite2D" parent="." unique_id=1504385908]
+texture = SubResource("GradientTexture2D_cpv6t")
+offset = Vector2(0, 27)
