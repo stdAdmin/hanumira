@@ -32,8 +32,6 @@ var being_in_focus = true
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	position = Vector2 (matrix_pos * tile_size)
-	#print (matrix_pos)
-
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
