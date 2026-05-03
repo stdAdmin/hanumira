@@ -5,6 +5,11 @@ extends Node2D
 #game speed: how fast the tileblobs are moving
 @export var game_speed = 5.0
 
+############ game field #################
+const tile_blob_size = 64 # which is centered at 0/0
+const gamefield_x_size = 20 # has to be even
+const gamefield_y_size = 16 # has to be even
+
 ############ tiles & blobs ##############
 var active_tile_blob = 1
 
@@ -14,14 +19,14 @@ var tile_matrix: Array[Array]
 
 ############### left --> right tile ################
 const movement_vector_left2right = Vector2(1,0)
-const start_pos_left2right = Vector2(1,1)
-const end_pos_left2right = Vector2(5,0)
+const start_pos_left2right = Vector2(1,gamefield_y_size/2)
+const end_pos_left2right = Vector2(gamefield_x_size/2,0)
 var cur_tile_left2right = null
 
 ############### right --> left tile ################
 const movement_vector_right2left = Vector2(-1,0)
-const start_pos_right2left = Vector2(10,1)
-const end_pos_right2left = Vector2(6,0)
+const start_pos_right2left = Vector2(gamefield_x_size,gamefield_y_size/2)
+const end_pos_right2left = Vector2(gamefield_x_size/2+1,0)
 var cur_tile_right2left = null
 
 
@@ -31,11 +36,32 @@ var cur_tile_right2left = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+		check_parameters()
 		tile_matrix = Utils.create_matrix(50,50)
 		#var block: Node2D = NewNode.instantiate()
 		#add_child(block)
 		spawn_tile()
 		pass
+
+func _draw():
+	# draw the raster
+	# horizontal
+	for i in range(gamefield_y_size+1):
+		draw_line(	Vector2(tile_blob_size/2									, tile_blob_size/2 + i*tile_blob_size), 
+					Vector2(tile_blob_size/2 + gamefield_x_size*tile_blob_size	, tile_blob_size/2 + i*tile_blob_size), 
+					Color.DARK_GRAY, 1)
+	# vertical
+	for i in range(gamefield_x_size+1):
+		draw_line(	Vector2(tile_blob_size/2 + i*tile_blob_size, tile_blob_size/2), 
+					Vector2(tile_blob_size/2 + i*tile_blob_size, tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
+					Color.DARK_GRAY, 1)
+	# in the middle
+	draw_line(	Vector2(tile_blob_size/2									, tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
+				Vector2(tile_blob_size/2 + gamefield_x_size*tile_blob_size	, tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
+				Color.RED, 2)	
+	draw_line(	Vector2(tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, tile_blob_size/2), 
+				Vector2(tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
+				Color.RED, 2)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -68,3 +94,6 @@ func _on_tile_movement_complete(direction: Vector2):
 	print ("got it")
 	spawn_tile()
 	
+func check_parameters():
+	assert (gamefield_x_size % 2 == 0)
+	assert (gamefield_y_size % 2 == 0)

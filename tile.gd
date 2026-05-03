@@ -52,7 +52,7 @@ func _process(delta: float) -> void:
 	# movement via time
 	cur_matrix_pos =  position / tile_size
 	current_cnt_movement += speed_movement
-	if  current_cnt_movement >=1:
+	if  current_cnt_movement >=1: 
 		current_cnt_movement = 0
 
 		var next_matrix_pos = position / tile_size + movement_vector
