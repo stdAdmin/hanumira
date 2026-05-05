@@ -2,6 +2,7 @@ extends Node2D
 class_name Blob
 
 # set by game
+var gamefield_left_upper_start: Vector2
 var movement_vector
 var matrix_pos: Vector2
 var out_of_gamefield_pos: int
@@ -20,12 +21,12 @@ var being_in_focus = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	position = Vector2 (matrix_pos * blob_size)
+	position = gamefield_left_upper_start + Vector2 (matrix_pos * blob_size)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	var cur_matrix_pos =  position / blob_size
+	var cur_matrix_pos =  (position-gamefield_left_upper_start) / blob_size
 
 	# movement via joystick, only when actively_controlled
 	if being_in_focus:
@@ -38,10 +39,12 @@ func _process(delta: float) -> void:
 				x_motion = sign(Input.get_axis("cr_left_left","cr_left_right")) # 0, -1, 1
 			else:
 				x_motion = sign(Input.get_axis("cr_right_left","cr_right_right")) # 0, -1, 1
-			var next_joy_matrix_pos = position / blob_size + Vector2(x_motion, 0)
+			var next_joy_matrix_pos = (position-gamefield_left_upper_start) / blob_size + Vector2(x_motion, 0)
 			# check endpos
 			#print ("curMatrixPos:", cur_matrix_pos, " nextJoyMatrixPos:", next_joy_matrix_pos)
-			if !(next_joy_matrix_pos.x == 0 || blob_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] != null):
+			if !(next_joy_matrix_pos.x == 0 || next_joy_matrix_pos.y == 0 ||                                            # check if not going outside the boundaries in display
+				 next_joy_matrix_pos.x >= blob_matrix_ref.size() || next_joy_matrix_pos.y >= blob_matrix_ref[0].size() ||# check if not going outside the boundaries of the matrix
+				 blob_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] != null):                                # check if not going to occupy an already occupied field
 					position += Vector2(x_motion, 0) * blob_size
 					blob_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
 					blob_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] = self
@@ -51,7 +54,7 @@ func _process(delta: float) -> void:
 	if  current_cnt_movement >=1: 
 		current_cnt_movement = 0
 
-		var next_matrix_pos = position / blob_size + movement_vector
+		var next_matrix_pos = (position-gamefield_left_upper_start) / blob_size + movement_vector
 		#1 up->down
 		if (movement_vector.y > 0 && movement_vector.x == 0):
 			if !(next_matrix_pos.y >= out_of_gamefield_pos || blob_matrix_ref[next_matrix_pos.x][next_matrix_pos.y] != null):

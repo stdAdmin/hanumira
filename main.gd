@@ -10,6 +10,7 @@ class_name Main
 const tile_blob_size = 64 # which is centered at 0/0
 const gamefield_x_size = 10 # has to be even
 const gamefield_y_size = 8 # has to be even
+const gamefield_left_upper_start = Vector2(100,100)
 
 ############ tiles & blobs ##############
 var active_tile_blob = 1
@@ -61,20 +62,20 @@ func _draw():
 	# draw the raster
 	# horizontal
 	for i in range(gamefield_y_size+1):
-		draw_line(	Vector2(tile_blob_size/2									, tile_blob_size/2 + i*tile_blob_size), 
-					Vector2(tile_blob_size/2 + gamefield_x_size*tile_blob_size	, tile_blob_size/2 + i*tile_blob_size), 
+		draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2										,gamefield_left_upper_start.y + tile_blob_size/2 + i*tile_blob_size), 
+					Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size*tile_blob_size		,gamefield_left_upper_start.y + tile_blob_size/2 + i*tile_blob_size), 
 					Color.DARK_GRAY, 1)
 	# vertical
 	for i in range(gamefield_x_size+1):
-		draw_line(	Vector2(tile_blob_size/2 + i*tile_blob_size, tile_blob_size/2), 
-					Vector2(tile_blob_size/2 + i*tile_blob_size, tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
+		draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + i*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2), 
+					Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + i*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
 					Color.DARK_GRAY, 1)
 	# in the middle
-	draw_line(	Vector2(tile_blob_size/2									, tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
-				Vector2(tile_blob_size/2 + gamefield_x_size*tile_blob_size	, tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
+	draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2										, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
+				Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size*tile_blob_size	, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
 				Color.RED, 2)	
-	draw_line(	Vector2(tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, tile_blob_size/2), 
-				Vector2(tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
+	draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2), 
+				Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
 				Color.RED, 2)
 
 
@@ -100,6 +101,7 @@ func spawn_tile():
 			tile.visible_down = true
 			
 		tile.tile_matrix_ref = tile_matrix
+		tile.gamefield_left_upper_start = gamefield_left_upper_start
 		tile.tile_size = Vector2(tile_blob_size, tile_blob_size)
 		tile.tile_movement_complete.connect(_on_tile_movement_complete)
 		# left2right
@@ -121,6 +123,7 @@ func spawn_tile():
 	else:
 		var blob: Blob = NewBlob.instantiate()						
 		blob.blob_matrix_ref = blob_matrix
+		blob.gamefield_left_upper_start = gamefield_left_upper_start
 		blob.blob_size = Vector2(tile_blob_size, tile_blob_size)
 		blob.blob_movement_complete.connect(_on_blob_movement_complete)
 		if active_tile_blob == 2:	

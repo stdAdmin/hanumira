@@ -2,6 +2,7 @@ extends Node2D
 class_name Tile
 
 # set by game
+var gamefield_left_upper_start: Vector2
 var movement_vector
 var matrix_pos: Vector2
 var end_pos: Vector2
@@ -31,7 +32,7 @@ var being_in_focus = true
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	position = Vector2 (matrix_pos * tile_size)
+	position = gamefield_left_upper_start + Vector2 (matrix_pos * tile_size)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
@@ -39,7 +40,7 @@ func _process(delta: float) -> void:
 	left_joystick_pressed = Input.is_action_pressed("cr_left_button")
 	right_joystick_pressed = Input.is_action_pressed("cr_right_button")
 
-	var cur_matrix_pos =  position / tile_size
+	var cur_matrix_pos =  (position-gamefield_left_upper_start) / tile_size
 	# movement via joystick, only when actively_controlled
 	if being_in_focus:
 		current_cnt_joystick_move += speed_joystick_move
@@ -51,10 +52,12 @@ func _process(delta: float) -> void:
 				y_motion = sign(Input.get_axis("cr_left_up","cr_left_down")) # 0, -1, 1
 			else:
 				y_motion = sign(Input.get_axis("cr_right_up","cr_right_down")) # 0, -1, 1
-			var next_joy_matrix_pos = position / tile_size + Vector2(0, y_motion)
+			var next_joy_matrix_pos = (position-gamefield_left_upper_start) / tile_size + Vector2(0, y_motion)
 			# check endpos
 			#print ("curMatrixPos:", cur_matrix_pos, " nextJoyMatrixPos:", next_joy_matrix_pos)
-			if !(next_joy_matrix_pos.x == 0 || tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] != null):
+			if !(next_joy_matrix_pos.x == 0 || next_joy_matrix_pos.y == 0 ||                                            # check if not going outside the boundaries in display
+				 next_joy_matrix_pos.x >= tile_matrix_ref.size() || next_joy_matrix_pos.y >= tile_matrix_ref[0].size() ||# check if not going outside the boundaries of the matrix
+				 tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] != null):                                # check if not going to occupy an already occupied field
 					position += Vector2(0, y_motion) * tile_size
 					tile_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
 					tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] = self
@@ -87,12 +90,12 @@ func _process(delta: float) -> void:
 	$boundary_down.visible = visible_down
 	
 	# movement via time
-	cur_matrix_pos =  position / tile_size
+	cur_matrix_pos =  (position-gamefield_left_upper_start) / tile_size
 	current_cnt_movement += speed_movement
 	if  current_cnt_movement >=1: 
 		current_cnt_movement = 0
 
-		var next_matrix_pos = position / tile_size + movement_vector
+		var next_matrix_pos = (position-gamefield_left_upper_start) / tile_size + movement_vector
 		# check endpos
 		#print ("move_vec:", movement_vector, " curMatrixPos:", cur_matrix_pos, " nextMatrixPos:", next_matrix_pos, " end_pos:", end_pos)
 		#1 left->right
