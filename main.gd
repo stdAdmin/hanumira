@@ -8,8 +8,8 @@ class_name Main
 
 ############ game field #################
 const tile_blob_size = 64 # which is centered at 0/0
-const gamefield_x_size = 10 # has to be even
-const gamefield_y_size = 8 # has to be even
+const gamefield_x_size = 12 # has to be even
+const gamefield_y_size = 10 # has to be even
 const gamefield_left_upper_start = Vector2(100,100)
 
 ############ tiles & blobs ##############
@@ -122,6 +122,7 @@ func spawn_tile():
 		add_child(tile)
 	else:
 		var blob: Blob = NewBlob.instantiate()						
+		blob.tile_matrix_ref = tile_matrix
 		blob.blob_matrix_ref = blob_matrix
 		blob.gamefield_left_upper_start = gamefield_left_upper_start
 		blob.blob_size = Vector2(tile_blob_size, tile_blob_size)

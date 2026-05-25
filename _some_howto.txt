@@ -1,3 +1,4 @@
+cd C:\_dev\godot\_projects\hanumira
 git status
 git add .
 git commit -m ""
