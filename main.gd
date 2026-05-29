@@ -8,25 +8,25 @@ class_name Main
 
 ############ game field #################
 const tile_blob_size = 64 # which is centered at 0/0
-const gamefield_x_size = 12 # has to be even
-const gamefield_y_size = 10 # has to be even
-const gamefield_left_upper_start = Vector2(100,100)
+const gamefield_x_size = 16 # has to be even, includes 2 invisible border lines left/right of type border
+const gamefield_y_size = 14 # has to be even, includes 2 invisible border lines bottom/up of type border
+const gamefield_left_upper_start = Vector2(0,0)
 
 ############ tiles & blobs ##############
-var active_tile_blob = 1
+var active_tile_blob = 4
 
 ############### tiles general #####################
 const NewTile = preload("res://tile.tscn")
 var tile_matrix: Array[Array]
 ############### left --> right tile ################
 const movement_vector_left2right = Vector2(1,0)
-const start_pos_left2right = Vector2(1,gamefield_y_size/2)
-const end_pos_left2right = Vector2(gamefield_x_size/2,0)
+const start_pos_left2right = Vector2(1,gamefield_y_size/2 - 1)
+const end_pos_left2right = Vector2(gamefield_x_size/2 - 1,0)
 var cur_tile_left2right = null
 ############### right --> left tile ################
 const movement_vector_right2left = Vector2(-1,0)
-const start_pos_right2left = Vector2(gamefield_x_size,gamefield_y_size/2+1)
-const end_pos_right2left = Vector2(gamefield_x_size/2+1,0)
+const start_pos_right2left = Vector2(gamefield_x_size-2,gamefield_y_size/2)
+const end_pos_right2left = Vector2(gamefield_x_size/2,0)
 var cur_tile_right2left = null
 
 
@@ -36,11 +36,11 @@ var blob_matrix: Array[Array]
 ############### up --> down Blob ################
 const movement_vector_up2down = Vector2(0,1)
 const start_pos_up2down = Vector2(gamefield_x_size/2, 1)
-const out_of_gamefield_pos_up2down = gamefield_y_size+1
+const out_of_gamefield_pos_up2down = gamefield_y_size-1 # whole row is of type "border"
 var cur_blob_up2down = null
 ############### down --> up Blob ################
 const movement_vector_down2up = Vector2(0,-1)
-const start_pos_down2up = Vector2(gamefield_x_size/2+1, gamefield_y_size)
+const start_pos_down2up = Vector2(gamefield_x_size/2+1, gamefield_y_size-2)
 const out_of_gamefield_pos_down2up = 0
 var cur_blob_down2up = null
 
@@ -51,8 +51,10 @@ var cur_blob_down2up = null
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 		check_parameters()
-		tile_matrix = Utils.create_matrix(gamefield_x_size+1,gamefield_y_size+1)
-		blob_matrix = Utils.create_matrix(gamefield_x_size+1,gamefield_y_size+1)
+		tile_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
+		blob_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
+		print ("Type is:", type_string(typeof(blob_matrix[0][0])))
+		print ("class is:", blob_matrix[0][0].get_script().get_global_name(), " and is Border is ", blob_matrix[0][0] is Border)
 		#var block: Node2D = NewNode.instantiate()
 		#add_child(block)
 		spawn_tile()
@@ -61,24 +63,31 @@ func _ready() -> void:
 func _draw():
 	# draw the raster
 	# horizontal
-	for i in range(gamefield_y_size+1):
-		draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2										,gamefield_left_upper_start.y + tile_blob_size/2 + i*tile_blob_size), 
-					Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size*tile_blob_size		,gamefield_left_upper_start.y + tile_blob_size/2 + i*tile_blob_size), 
+	for i in range(0, gamefield_y_size-1):
+		draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2										,
+						gamefield_left_upper_start.y + tile_blob_size*1/2 + i*tile_blob_size), 
+					Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2 + (gamefield_x_size-2)*tile_blob_size		,
+					  	gamefield_left_upper_start.y + tile_blob_size*1/2 + i*tile_blob_size), 
 					Color.DARK_GRAY, 1)
 	# vertical
-	for i in range(gamefield_x_size+1):
-		draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + i*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2), 
-					Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + i*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
+	for i in range(0, gamefield_x_size-1):
+		draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2 + i*tile_blob_size, 
+						gamefield_left_upper_start.y + tile_blob_size*1/2), 
+					Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2 + i*tile_blob_size, 
+						gamefield_left_upper_start.y + tile_blob_size*1/2 + (gamefield_y_size-2)*tile_blob_size), 
 					Color.DARK_GRAY, 1)
-	# in the middle
-	draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2										, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
-				Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size*tile_blob_size	, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size/2*tile_blob_size), 
+	# in the middle	
+	draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2										, 
+					gamefield_left_upper_start.y + tile_blob_size*1/2 + (gamefield_y_size-2)/2*tile_blob_size), 
+				Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2 + (gamefield_x_size-2)*tile_blob_size	, 
+					gamefield_left_upper_start.y + tile_blob_size*1/2 + (gamefield_y_size-2)/2*tile_blob_size), 
 				Color.RED, 2)	
-	draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2), 
-				Vector2(gamefield_left_upper_start.x + tile_blob_size/2 + gamefield_x_size/2*tile_blob_size, gamefield_left_upper_start.y + tile_blob_size/2 + gamefield_y_size*tile_blob_size), 
+	draw_line(	Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2 + (gamefield_x_size-2)/2*tile_blob_size, 
+					gamefield_left_upper_start.y + tile_blob_size*1/2), 
+				Vector2(gamefield_left_upper_start.x + tile_blob_size*1/2 + (gamefield_x_size-2)/2*tile_blob_size, 
+					gamefield_left_upper_start.y + tile_blob_size*1/2 + (gamefield_y_size-2)*tile_blob_size), 
 				Color.RED, 2)
-
-
+	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
@@ -113,7 +122,6 @@ func spawn_tile():
 			active_tile_blob = 2
 		#right2left
 		else:
-			print("3")
 			cur_tile_right2left = tile
 			tile.movement_vector = movement_vector_right2left
 			tile.matrix_pos = start_pos_right2left
@@ -128,14 +136,12 @@ func spawn_tile():
 		blob.blob_size = Vector2(tile_blob_size, tile_blob_size)
 		blob.blob_movement_complete.connect(_on_blob_movement_complete)
 		if active_tile_blob == 2:	
-			print("2")	
 			cur_blob_up2down = blob
 			blob.movement_vector = movement_vector_up2down
 			blob.matrix_pos = start_pos_up2down
 			blob.out_of_gamefield_pos = out_of_gamefield_pos_up2down
 			active_tile_blob = 3
 		else:
-			print("4")
 			cur_blob_down2up = blob
 			blob.movement_vector = movement_vector_down2up
 			blob.matrix_pos = start_pos_down2up
