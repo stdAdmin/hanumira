@@ -5,8 +5,6 @@
 
 [node name="blob" type="Node2D" unique_id=1675270821]
 script = ExtResource("1_iplyg")
-speed_movement = null
-speed_joystick_move = null
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=975426824]
 texture = ExtResource("2_wigkh")

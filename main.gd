@@ -13,7 +13,7 @@ const gamefield_y_size = 14 # has to be even, includes 2 invisible border lines 
 const gamefield_left_upper_start = Vector2(0,0)
 
 ############ tiles & blobs ##############
-var active_tile_blob = 4
+var active_tile_blob = 1
 
 ############### tiles general #####################
 const NewTile = preload("res://tile.tscn")
@@ -50,15 +50,13 @@ var cur_blob_down2up = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+		var array = Utils.create_debug_completion_array(gamefield_x_size, gamefield_y_size)
+		print(Utils.print_debug_completion_array(gamefield_x_size, gamefield_y_size, array))
+		
 		check_parameters()
 		tile_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
 		blob_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
-		print ("Type is:", type_string(typeof(blob_matrix[0][0])))
-		print ("class is:", blob_matrix[0][0].get_script().get_global_name(), " and is Border is ", blob_matrix[0][0] is Border)
-		#var block: Node2D = NewNode.instantiate()
-		#add_child(block)
 		spawn_tile()
-		pass
 
 func _draw():
 	# draw the raster
@@ -152,12 +150,29 @@ func spawn_tile():
 
 		
 func _on_tile_movement_complete(direction: Vector2):
-	print ("got tile signal")
+	Log.debug("got tile complete signal")
+	checkForTileBlobCompletion()
 	spawn_tile()
 
+# can be that it is stuck or fell outside, trigger next
 func _on_blob_movement_complete():
-	print ("got blob signal")
+	Log.debug("got blob complete signal")
+	checkForTileBlobCompletion()
 	spawn_tile()
+
+func checkForTileBlobCompletion():
+	var debug_overview
+	# executed every time a tile or blob has movement completed
+	# go through the inner columns and check if there 
+	var l_inner_col = gamefield_x_size/2 - 1
+	var r_inner_col = gamefield_x_size/2
+	Log.debug(str("left inner termination=", l_inner_col, " right inner termination=", r_inner_col))
+	var completed_tiles: Array[Tile] = []
+	for row in range(1, gamefield_y_size-2):
+		var cur_tile = tile_matrix[l_inner_col][row]
+		var cur_blob = blob_matrix[l_inner_col][row]
+		#if (cur_tile is Tile && cur_blob is Blob):
+			
 
 func check_parameters():
 	assert (gamefield_x_size % 2 == 0)

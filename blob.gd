@@ -16,7 +16,8 @@ var current_cnt_joystick_move: float = 0
 
 var tile_matrix_ref: Array[Array] # set during instantiate
 var blob_matrix_ref: Array[Array] # set during instantiate
-signal blob_movement_complete()  # essentially it fell outside of screen
+signal blob_movement_complete()  # blob cannot continue and "hangs" at/in a tile
+signal blob_fell_ouside()  		 # essentially it fell outside of screen
 
 var being_in_focus = true
 
@@ -45,8 +46,9 @@ func _process(delta: float) -> void:
 				var next_tile_matrix_entry = tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y]
 				var next_blob_matrix_entry = blob_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y]
 				# check endpos
-				# 1. reached border
+				# 1. reached border, remove the blob, inform score
 				if next_blob_matrix_entry is Border:
+					# simply do nothing, not allowed
 					Log.debug("joy next blob outside")	
 				# 2. field occupied				
 				elif next_blob_matrix_entry != null:  
@@ -56,16 +58,12 @@ func _process(delta: float) -> void:
 					# left to right allowed and no blob there
 					if x_motion == 1:
 						if cur_tile != null && cur_tile.visible_right:
-							if being_in_focus:
-								emit_signal("blob_movement_complete")
-								Log.debug("joy blob_movement_complete: borderline inside tile during right movement")
-								being_in_focus = false								
+							# simply do nothing, not allowed
+							pass							
 						elif (tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] !=null &&
 							  tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y].visible_left):  
-							if being_in_focus:
-								emit_signal("blob_movement_complete")
-								Log.debug("joy blob_movement_complete: borderline in next tile during right movement")
-								being_in_focus = false	
+							# simply do nothing, not allowed
+							pass			
 						else:
 							position += Vector2(x_motion, 0) * blob_size
 							blob_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
@@ -74,16 +72,12 @@ func _process(delta: float) -> void:
 							Log.debug ("joy Moved blob successfully")									# left to right allowed and no blob there
 					elif x_motion == -1:
 						if cur_tile != null && cur_tile.visible_left:
-							if being_in_focus:
-								emit_signal("blob_movement_complete")
-								Log.debug("joy blob_movement_complete: borderline inside tile during left movement")
-								being_in_focus = false								
+							# simply do nothing, not allowed
+							pass									
 						elif (tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] != null &&
 							   tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y].visible_right):  
-							if being_in_focus:
-								emit_signal("blob_movement_complete")
-								Log.debug("joy blob_movement_complete: borderline in next tile during left movement")
-								being_in_focus = false	
+							# simply do nothing, not allowed
+							pass		
 						else:
 							position += Vector2(x_motion, 0) * blob_size
 							blob_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
@@ -108,11 +102,17 @@ func _process(delta: float) -> void:
 					Log.debug("time blob_movement_complete: borderline inside tile")
 					being_in_focus = false	
 			# 2. check if next field is Border
+			# remove the blob completely now from matrix and scene
 			elif (next_blob_matrix_entry is Border):
 				if being_in_focus:
+					emit_signal("blob_fell_ouside")
 					emit_signal("blob_movement_complete")
-					Log.debug("time blob_movement_complete: next field is border")
-					being_in_focus = false	
+					Log.debug("time blob_movement_complete: blob fell outside")
+					being_in_focus = false
+					# remove itself from blob matrix
+					blob_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
+					# remove itself from game tree
+					queue_free()	
 			# 3. check if next field is a tile and the tile has a border on top
 			elif (tile_matrix_ref[next_blob_matrix_pos.x][next_blob_matrix_pos.y] != null && 
 				  tile_matrix_ref[next_blob_matrix_pos.x][next_blob_matrix_pos.y].visible_up):
@@ -141,11 +141,17 @@ func _process(delta: float) -> void:
 					Log.debug("time blob_movement_complete: borderline inside tile")
 					being_in_focus = false	
 			# 2. check if next field is Border
+			# remove the blob completely now from matrix and scene
 			elif (next_blob_matrix_entry is Border):
 				if being_in_focus:
+					emit_signal("blob_fell_ouside")
 					emit_signal("blob_movement_complete")
-					Log.debug("time blob_movement_complete: next field is border")
-					being_in_focus = false	
+					Log.debug("time blob_movement_complete: blob fell outside")
+					being_in_focus = false
+					# remove itself from blob matrix
+					blob_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
+					# remove itself from game tree
+					queue_free()
 			# 3. check if next field is a tile and the tile has a border on bottom
 			elif (tile_matrix_ref[next_blob_matrix_pos.x][next_blob_matrix_pos.y] != null && 
 				  tile_matrix_ref[next_blob_matrix_pos.x][next_blob_matrix_pos.y].visible_down):

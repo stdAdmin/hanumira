@@ -16,5 +16,22 @@ static func create_matrix(rows: int, cols: int) -> Array[Array]:
 		g.append(row)
 	return g
 	
+static func create_debug_completion_array(rows: int, cols: int) -> Array[Array]:
+	var g: Array[Array] = []
+	for y in range(rows):
+		var row := []
+		row.resize(cols)
+		row.fill("|-|")
+		g.append(row)
+	return g	
 
-	
+static func print_debug_completion_array(rows: int, cols: int, array: Array[Array]) -> String:
+	var out = ""
+	for col in range(0, cols):
+		out +=  "%02d" % col
+		for row in range(0, rows):
+			out += array[row][col]
+		out += "\n"
+	return out
+
+		
