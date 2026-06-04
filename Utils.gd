@@ -21,7 +21,7 @@ static func create_debug_completion_array(rows: int, cols: int) -> Array[Array]:
 	for y in range(rows):
 		var row := []
 		row.resize(cols)
-		row.fill("|-|")
+		row.fill("-")
 		g.append(row)
 	return g	
 

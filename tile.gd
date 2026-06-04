@@ -1,5 +1,5 @@
-extends Node2D
 class_name Tile
+extends Node2D
 
 # set by game
 var gamefield_left_upper_start: Vector2

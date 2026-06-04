@@ -1,5 +1,5 @@
-extends Node2D
 class_name Main
+extends Node2D
 
 # sequence of appearing is left tile, top blob, right tile, bottom blob in spawn_time deltas
 @export var spawn_time = 5.0
@@ -50,9 +50,6 @@ var cur_blob_down2up = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-		var array = Utils.create_debug_completion_array(gamefield_x_size, gamefield_y_size)
-		print(Utils.print_debug_completion_array(gamefield_x_size, gamefield_y_size, array))
-		
 		check_parameters()
 		tile_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
 		blob_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
@@ -161,7 +158,9 @@ func _on_blob_movement_complete():
 	spawn_tile()
 
 func checkForTileBlobCompletion():
-	var debug_overview
+	var array = Utils.create_debug_completion_array(gamefield_x_size, gamefield_y_size)
+	
+	var found_a_match = false
 	# executed every time a tile or blob has movement completed
 	# go through the inner columns and check if there 
 	var l_inner_col = gamefield_x_size/2 - 1
@@ -171,8 +170,17 @@ func checkForTileBlobCompletion():
 	for row in range(1, gamefield_y_size-2):
 		var cur_tile = tile_matrix[l_inner_col][row]
 		var cur_blob = blob_matrix[l_inner_col][row]
-		#if (cur_tile is Tile && cur_blob is Blob):
-			
+		if (cur_tile is Tile and cur_blob is Blob):
+			array [l_inner_col][row] = "x"
+			found_a_match = true
+	for row in range(1, gamefield_y_size-2):
+		var cur_tile = tile_matrix[r_inner_col][row]
+		var cur_blob = blob_matrix[r_inner_col][row]
+		if (cur_tile is Tile and cur_blob is Blob):
+			array [l_inner_col][row] = "x"
+			found_a_match = true		
+	if found_a_match: 
+		print(Utils.print_debug_completion_array(gamefield_x_size, gamefield_y_size, array))		
 
 func check_parameters():
 	assert (gamefield_x_size % 2 == 0)
