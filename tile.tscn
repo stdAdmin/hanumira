@@ -42,17 +42,21 @@ script = ExtResource("1_n3f48")
 texture = SubResource("GradientTexture2D_xfwl5")
 
 [node name="boundary_left" type="Sprite2D" parent="." unique_id=1968027441]
+z_index = 1
 texture = SubResource("GradientTexture2D_vx4y2")
 offset = Vector2(-27, 0)
 
 [node name="boundary_up" type="Sprite2D" parent="." unique_id=1949242614]
+z_index = 1
 texture = SubResource("GradientTexture2D_a2t34")
 offset = Vector2(0, -27)
 
 [node name="boundary_right" type="Sprite2D" parent="." unique_id=454018661]
+z_index = 1
 texture = SubResource("GradientTexture2D_tfor0")
 offset = Vector2(27, 0)
 
 [node name="boundary_down" type="Sprite2D" parent="." unique_id=1504385908]
+z_index = 1
 texture = SubResource("GradientTexture2D_cpv6t")
 offset = Vector2(0, 27)

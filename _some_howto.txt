@@ -1,7 +1,16 @@
-cd C:\_dev\godot\_projects\hanumira
+Laptop: cd C:\_dev\godot\_projects\hanumira
+Desktop: C:\_dev\Godot\proj\hanumira
 git status
 git add .
 git commit -m ""
 	git remote add origin https://github.com/stdAdmin/hanumira.git    	# main is anyway selected
 	git branch -M main   												# main is anyway selected
 git push -u origin main 
+
+-- holen
+git diff origin/main
+
+git pull origin main
+-->
+Remote: origin
+Branch on that remote: main
