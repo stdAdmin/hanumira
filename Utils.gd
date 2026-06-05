@@ -1,48 +1,31 @@
 class_name Utils
 extends Object  # optional but clean
-
-static func create_matrix(rows: int, cols: int) -> Array[Array]:
-	var border_type = Border.new()
-	var g: Array[Array] = []
-	for y in range(rows):
-		var row := []
-		row.resize(cols)
-		if y==0 || y==rows-1:
-			row.fill(border_type)	
-		else:
-			row[0] = border_type
-			row[cols-1] = border_type
-		g.append(row)
-	return g
 	
-static func create_debug_completion_array(rows: int, cols: int) -> Array[Array]:
-	var g: Array[Array] = []
-	for y in range(rows):
-		var row := []
-		row.resize(cols)
-		row.fill("-")
-		g.append(row)
+static func create_matrix(cols: int, rows: int) -> Array2D:
+	var border_type = Border.new()
+	var array = Array2D.new(cols, rows, null)
+	for y in range(0, rows):
+		for x in range(0, cols):
+			if y==0 || y==rows-1:
+				array.s(x, y, border_type)
+			elif x==0 || x==cols-1:
+				array.s(x, y, border_type)	
+	return array
+	
+	
+static func create_debug_completion_array(rows: int, cols: int) -> Array2D:
+	var g = Array2D.new(cols, rows, "-")
 	return g	
 
-static func print_debug_completion_array(rows: int, cols: int, array: Array[Array]) -> String:
+static func print_debug_completion_array(array: Array2D) -> String:
 	var out = ""
-	for col in range(0, cols):
-		out +=  "%02d" % col
-		for row in range(0, rows):
-			if row == 0 or row == rows-1 or col == 0 or col == cols-1: out += "%"
-			else: out += array[row][col]
+	for row in range(0, array.y_size):
+		out +=  "%02d" % row
+		for col in range(0, array.x_size):
+			if row == 0 or row == array.y_size-1 or col == 0 or col == array.x_size-1: out += "%"
+			else: out += array.g(row, col)
 		out += "\n"
 	return out
-
-#static func print_debug_completion_array(cols: int, rows: int, array: Array[Array]) -> String:
-	#var out = "\n"
-	#for row in range(0, rows):
-		#out +=  "%02d" % row
-		#for col in range(0, cols):
-			#if row == 0 or row == rows-1 or col == 0 or col == cols-1: out += "% "
-			#else: out += array[col][row]
-		#out += "\n"
-	#return out
 
 # border (only when both have it) = O
 # empty (both) = -
@@ -50,16 +33,16 @@ static func print_debug_completion_array(rows: int, cols: int, array: Array[Arra
 # only blob = b
 # both = X
 # none of it = error = e
-static func print_tile_blob_matrix(rows: int, cols: int, tile_array: Array[Array], blob_array: Array[Array]) -> String:
+static func print_tile_blob_matrix(tile_array: Array2D, blob_array: Array2D) -> String:
 	var out = ""
-	for col in range(0, cols):
-		out +=  "%02d" % col
-		for row in range(0, rows):
-			if   tile_array[row][col] is Border and blob_array[row][col] is Border: out+= "O"
-			elif tile_array[row][col] == null and blob_array[row][col] == null: out+= "-"
-			elif tile_array[row][col] is Tile and blob_array[row][col] == null: out+= "t"
-			elif tile_array[row][col] == null and blob_array[row][col] is Blob: out+= "b"
-			elif tile_array[row][col] is Tile and blob_array[row][col] is Blob: out+= "X"
+	for row in range(0, tile_array.y_size):
+		out +=  "%02d" % row
+		for col in range(0, tile_array.x_size):
+			if   tile_array.g(col, row) is Border and blob_array.g(col, row) is Border: out+= "O"
+			elif tile_array.g(col, row) == null and blob_array.g(col, row) == null: out+= "-"
+			elif tile_array.g(col, row) is Tile and blob_array.g(col, row) == null: out+= "t"
+			elif tile_array.g(col, row) == null and blob_array.g(col, row) is Blob: out+= "b"
+			elif tile_array.g(col, row) is Tile and blob_array.g(col, row) is Blob: out+= "X"
 			else: out+="e"
 		out += "\n"
 	return out

@@ -17,7 +17,7 @@ var active_tile_blob = 1
 
 ############### tiles general #####################
 const NewTile = preload("res://tile.tscn")
-var tile_matrix: Array[Array]
+var tile_matrix: Array2D
 ############### left --> right tile ################
 const movement_vector_left2right = Vector2(1,0)
 const start_pos_left2right = Vector2(1,gamefield_y_size/2 - 1)
@@ -32,7 +32,7 @@ var cur_tile_right2left = null
 
 ############### blobs general #####################
 const NewBlob = preload("res://blob.tscn")
-var blob_matrix: Array[Array]
+var blob_matrix: Array2D
 ############### up --> down Blob ################
 const movement_vector_up2down = Vector2(0,1)
 const start_pos_up2down = Vector2(gamefield_x_size/2, 1)
@@ -51,11 +51,11 @@ var cur_blob_down2up = null
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 		#Utils.print_debug_completion_array(16, 14, gamefield_scenarios.convert_scenarios_in_true_arrays(14, 14, gamefield_scenarios.scenario_1))
-	
-	
-		check_parameters()
 		tile_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
 		blob_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
+		#print(Utils.print_tile_blob_matrix(tile_matrix, blob_matrix))
+	
+		check_parameters()
 		spawn_tile()
 
 func _draw():
@@ -91,7 +91,7 @@ func _process(delta: float) -> void:
 	pass
 	
 func spawn_tile():
-	Log.debug(Utils.print_tile_blob_matrix(gamefield_x_size, gamefield_y_size, tile_matrix, blob_matrix))	
+	#Log.debug(Utils.print_tile_blob_matrix(gamefield_x_size, gamefield_y_size, tile_matrix, blob_matrix))	
 	if active_tile_blob == 1 || active_tile_blob == 3:
 		var tile: Tile = NewTile.instantiate()
 		# percentage distribution of tile type (border lines)
@@ -169,74 +169,78 @@ func checkForTileBlobCompletion():
 	var r_inner_col = gamefield_x_size/2
 	Log.debug(str("left inner termination=", l_inner_col, " right inner termination=", r_inner_col))
 	for row in range(1, gamefield_y_size-2):
-		var cur_tile = tile_matrix[l_inner_col][row] # can be null or whatever, so don't cast!
-		var cur_blob = blob_matrix[l_inner_col][row] # can be null or whatever, so don't cast!
+		var cur_tile = tile_matrix.g(l_inner_col, row) # can be null or whatever, so don't cast!
+		var cur_blob = blob_matrix.g(l_inner_col, row) # can be null or whatever, so don't cast!
 		if (cur_tile is Tile and !cur_tile.visible_right and cur_blob is Blob):
-			array [l_inner_col][row] = "x"
+			array.s(l_inner_col, row, "x")
 			recursive(l_inner_col, row, array)			
 	for row in range(1, gamefield_y_size-2):
-		var cur_tile = tile_matrix[r_inner_col][row]
-		var cur_blob = blob_matrix[r_inner_col][row]
+		var cur_tile = tile_matrix.g(r_inner_col, row)
+		var cur_blob = blob_matrix.g(r_inner_col, row)
 		if (cur_tile is Tile and !cur_tile.visible_left and cur_blob is Blob):
-			array [r_inner_col][row] = "x"
+			array.s(r_inner_col, row, "x")
 			recursive(r_inner_col, row, array)
 	# remove now all marked tiles and blobs
-	for col in range(0, gamefield_x_size):
-		for row in range(0, gamefield_y_size):
-			if array[col][row] == "x":
-				var tile_to_be_removed: Tile = tile_matrix[col][row]
-				var blob_to_be_removed: Blob = blob_matrix[col][row]
-				tile_matrix[col][row] = null
-				blob_matrix[col][row] = null
+	for row in range(0, gamefield_y_size):
+		for col in range(0, gamefield_x_size):
+			if array.g(col, row) == "x":
+				var tile_to_be_removed: Tile = tile_matrix.g(col, row)
+				var blob_to_be_removed: Blob = blob_matrix.g(col, row)		
+				var t = "tile&Blob to be removed x=%s" % col % " y=%s" % row % " tile:%s" % (tile_to_be_removed!=null) % " blob:%s" % (blob_to_be_removed!=null) 
+				Log.debug(t)
+				tile_matrix.s(col, row, null)
+				blob_matrix.s(col, row, null)
 				# remove itself from game tree
 				tile_to_be_removed.queue_free()		
 				blob_to_be_removed.queue_free()	
-	print(Utils.print_debug_completion_array(gamefield_x_size, gamefield_y_size, array))	
+	
+	print(Utils.print_tile_blob_matrix(tile_matrix, blob_matrix))			
+	#print(Utils.print_debug_completion_array(array))	
 	
 
 # assumes that the given position has been approved to be removed!
-func recursive(col: int, row: int, array: Array[Array]):
+func recursive(col: int, row: int, array: Array2D):
 	# current
-	var tc: Tile = tile_matrix[col][row]	
+	var tc: Tile = tile_matrix.g(col, row)	
 	############# left ####################
-	var tl = tile_matrix[col-1][row]
-	var bl = blob_matrix[col-1][row]
+	var tl = tile_matrix.g(col-1, row)
+	var bl = blob_matrix.g(col-1, row)
 	if tl is Border: # check for the blob border irrelevant
 		pass
 	elif tl is Tile and bl is Blob and !tc.visible_left and !tl.visible_right:
 		# found next one, if it's already in the array, stop otherwise add it and continue recursion
-		if array[col-1][row] != "x":
-			array[col-1][row] = "x"
+		if array.g(col-1, row) != "x":
+			array.s(col-1, row, "x")
 			recursive(col-1, row, array)
 	############# right ##################
-	var tr = tile_matrix[col+1][row]
-	var br = blob_matrix[col+1][row]
+	var tr = tile_matrix.g(col+1, row)
+	var br = blob_matrix.g(col+1, row)
 	if tr is Border: # check for the blob border irrelevant
 		pass
 	elif tr is Tile and br is Blob and !tc.visible_right and !tr.visible_left:
 		# found next one, if it's already in the array, stop otherwise add it and continue recursion
-		if array[col+1][row] != "x":
-			array[col+1][row] = "x"
+		if array.g(col+1, row) != "x":
+			array.s(col+1, row, "x")
 			recursive(col+1, row, array)
 	############# up ####################
-	var tu = tile_matrix[col][row-1]
-	var bu = blob_matrix[col][row-1]
+	var tu = tile_matrix.g(col, row-1)
+	var bu = blob_matrix.g(col, row-1)
 	if tu is Border: # check for the blob border irrelevant
 		pass
 	elif tu is Tile and bu is Blob and !tc.visible_up and !tu.visible_down:
 		# found next one, if it's already in the array, stop otherwise add it and continue recursion
-		if array[col][row-1] != "x":
-			array[col][row-1] = "x"
+		if array.g(col, row-1) != "x":
+			array.s(col, row-1, "x")
 			recursive(col, row-1, array)
 	############# down ####################
-	var td = tile_matrix[col][row+1]
-	var bd = blob_matrix[col][row+1]
+	var td = tile_matrix.g(col, row+1)
+	var bd = blob_matrix.g(col, row+1)
 	if td is Border: # check for the blob border irrelevant
 		pass
 	elif td is Tile and bd is Blob and !tc.visible_down and !td.visible_up:
 		# found next one, if it's already in the array, stop otherwise add it and continue recursion
-		if array[col][row+1] != "x":
-			array[col][row+1] = "x"
+		if array.g(col, row+1) != "x":
+			array.s(col, row+1, "x")
 			recursive(col, row+1, array)
 	
 func check_parameters():

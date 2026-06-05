@@ -1,5 +1,5 @@
 Laptop: cd C:\_dev\godot\_projects\hanumira
-Desktop: C:\_dev\Godot\proj\hanumira
+Desktop: cd C:\_dev\Godot\proj\hanumira
 git status
 git add .
 git commit -m ""

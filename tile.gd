@@ -25,7 +25,7 @@ var right_joystick_pressed = false
 @export var speed_joystick_move: float = 0.2
 @export var speed_joystick_press: float = 0.1
 
-var tile_matrix_ref: Array[Array] # set during instantiate
+var tile_matrix_ref: Array2D # set during instantiate
 signal tile_movement_complete(data: Vector2)  # vector indicates direction
 
 var being_in_focus = true
@@ -42,7 +42,7 @@ func _process(delta: float) -> void:
 	right_joystick_pressed = Input.is_action_pressed("cr_right_button")
 
 	var cur_matrix_pos =  (position-gamefield_left_upper_start) / tile_size
-	var cur_matrix_entry = tile_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y]
+	var cur_matrix_entry = tile_matrix_ref.g(cur_matrix_pos.x, cur_matrix_pos.y)
 	## movement via joystick, only when actively_controlled
 	if being_in_focus:
 		current_cnt_joystick_move += speed_joystick_move
@@ -57,11 +57,11 @@ func _process(delta: float) -> void:
 			var next_joy_matrix_pos = (position-gamefield_left_upper_start) / tile_size + Vector2(0, y_motion)
 			# check endpos
 			if !(next_joy_matrix_pos.x == 0 || next_joy_matrix_pos.y == 0 ||                                            # check if not going outside the boundaries in display
-				 next_joy_matrix_pos.x == tile_matrix_ref.size() || next_joy_matrix_pos.y == tile_matrix_ref[0].size() ||# check if not going outside the boundaries of the matrix
-				 tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] != null):                                # check if not going to occupy an already occupied field
+				 next_joy_matrix_pos.x == tile_matrix_ref.x_size || next_joy_matrix_pos.y == tile_matrix_ref.y_size || # check if not going outside the boundaries of the matrix
+				 tile_matrix_ref.g(next_joy_matrix_pos.x, next_joy_matrix_pos.y) != null):                                # check if not going to occupy an already occupied field
 					position += Vector2(0, y_motion) * tile_size
-					tile_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
-					tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] = self
+					tile_matrix_ref.s(cur_matrix_pos.x, cur_matrix_pos.y, null)
+					tile_matrix_ref.s(next_joy_matrix_pos.x, next_joy_matrix_pos.y, self)
 					matrix_pos = next_joy_matrix_pos				
 
 		current_cnt_joystick_press += speed_joystick_press
@@ -98,10 +98,10 @@ func _process(delta: float) -> void:
 		var next_matrix_pos = (position-gamefield_left_upper_start) / tile_size + movement_vector
 		if (movement_vector.x > 0):
 			# hittimg endpos in middle or next field is occupied
-			if !(next_matrix_pos.x > end_pos.x || tile_matrix_ref[next_matrix_pos.x][next_matrix_pos.y] != null):
+			if !(next_matrix_pos.x > end_pos.x || tile_matrix_ref.g(next_matrix_pos.x, next_matrix_pos.y) != null):
 				position += movement_vector * tile_size
-				tile_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
-				tile_matrix_ref[next_matrix_pos.x][next_matrix_pos.y] = self
+				tile_matrix_ref.s(cur_matrix_pos.x, cur_matrix_pos.y, null)
+				tile_matrix_ref.s(next_matrix_pos.x, next_matrix_pos.y, self)
 				matrix_pos = next_matrix_pos					
 			else:
 				#print ("end reached")
@@ -110,10 +110,10 @@ func _process(delta: float) -> void:
 					being_in_focus = false
 		#2 right->left
 		elif (movement_vector.x < 0):
-			if !(next_matrix_pos.x < end_pos.x || tile_matrix_ref[next_matrix_pos.x][next_matrix_pos.y] != null):
+			if !(next_matrix_pos.x < end_pos.x || tile_matrix_ref.g(next_matrix_pos.x, next_matrix_pos.y) != null):
 				position += movement_vector * tile_size
-				tile_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
-				tile_matrix_ref[next_matrix_pos.x][next_matrix_pos.y] = self
+				tile_matrix_ref.s(cur_matrix_pos.x, cur_matrix_pos.y, null)
+				tile_matrix_ref.s(next_matrix_pos.x, next_matrix_pos.y, self)
 				matrix_pos = next_matrix_pos					
 			else:
 				#print ("end reached")
