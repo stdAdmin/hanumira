@@ -23,6 +23,18 @@ func i(x: int, y: int) -> int:
 func g(x: int, y: int):
 	return d[i(x, y)]
 
+#func g(x: int, y: int):
+	#var value = d[i(x, y)]
+	#if value == null:
+		#return null
+	#if not is_instance_valid(value):
+		#d[i(x, y)] = null
+		#return null
+	#if value.is_queued_for_deletion():
+		#d[i(x, y)] = null
+		#return null
+	#return value
+
 # set
 func s(x: int, y: int, v) -> void:
 	d[i(x, y)] = v

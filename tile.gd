@@ -26,7 +26,7 @@ var right_joystick_pressed = false
 @export var speed_joystick_press: float = 0.1
 
 var tile_matrix_ref: Array2D # set during instantiate
-signal tile_movement_complete(data: Vector2)  # vector indicates direction
+signal tile_movement_complete(being_in_focus: bool, message: String)
 
 var being_in_focus = true
 
@@ -54,15 +54,14 @@ func _process(delta: float) -> void:
 				y_motion = sign(Input.get_axis("cr_left_up","cr_left_down")) # 0, -1, 1
 			else:
 				y_motion = sign(Input.get_axis("cr_right_up","cr_right_down")) # 0, -1, 1
-			var next_joy_matrix_pos = (position-gamefield_left_upper_start) / tile_size + Vector2(0, y_motion)
-			# check endpos
-			if !(next_joy_matrix_pos.x == 0 || next_joy_matrix_pos.y == 0 ||                                            # check if not going outside the boundaries in display
-				 next_joy_matrix_pos.x == tile_matrix_ref.x_size || next_joy_matrix_pos.y == tile_matrix_ref.y_size || # check if not going outside the boundaries of the matrix
-				 tile_matrix_ref.g(next_joy_matrix_pos.x, next_joy_matrix_pos.y) != null):                                # check if not going to occupy an already occupied field
-					position += Vector2(0, y_motion) * tile_size
-					tile_matrix_ref.s(cur_matrix_pos.x, cur_matrix_pos.y, null)
-					tile_matrix_ref.s(next_joy_matrix_pos.x, next_joy_matrix_pos.y, self)
-					matrix_pos = next_joy_matrix_pos				
+			var next_joy_matrix_pos = (position-gamefield_left_upper_start) / tile_size + Vector2(0, y_motion) 
+			var t_next = tile_matrix_ref.g(next_joy_matrix_pos.x, next_joy_matrix_pos.y)
+			# check endpos, if not reach move it
+			if !(t_next is Border || t_next != null): 
+				position += Vector2(0, y_motion) * tile_size
+				tile_matrix_ref.s(cur_matrix_pos.x, cur_matrix_pos.y, null)
+				tile_matrix_ref.s(next_joy_matrix_pos.x, next_joy_matrix_pos.y, self)
+				matrix_pos = next_joy_matrix_pos				
 
 		current_cnt_joystick_press += speed_joystick_press
 		if  current_cnt_joystick_press >=1:
@@ -104,9 +103,8 @@ func _process(delta: float) -> void:
 				tile_matrix_ref.s(next_matrix_pos.x, next_matrix_pos.y, self)
 				matrix_pos = next_matrix_pos					
 			else:
-				#print ("end reached")
 				if being_in_focus:
-					emit_signal("tile_movement_complete", movement_vector)
+					emit_signal("tile_movement_complete", being_in_focus, "left->right, end_pos_reached")
 					being_in_focus = false
 		#2 right->left
 		elif (movement_vector.x < 0):
@@ -116,8 +114,7 @@ func _process(delta: float) -> void:
 				tile_matrix_ref.s(next_matrix_pos.x, next_matrix_pos.y, self)
 				matrix_pos = next_matrix_pos					
 			else:
-				#print ("end reached")
 				if being_in_focus:
-					emit_signal("tile_movement_complete", movement_vector)
+					emit_signal("tile_movement_complete", being_in_focus, "right->left, end_pos_reached")
 					being_in_focus = false		
 					

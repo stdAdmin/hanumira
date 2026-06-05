@@ -17,8 +17,8 @@ var current_cnt_joystick_move: float = 0
 
 var tile_matrix_ref: Array2D     # set during instantiate
 var blob_matrix_ref: Array2D    # set during instantiate
-signal blob_movement_complete()  # blob cannot continue and "hangs" at/in a tile
-signal blob_fell_ouside()  		 # essentially it fell outside of screen
+signal blob_movement_complete(being_in_focus: bool, message: String)  # blob cannot continue and "hangs" at/in a tile
+signal blob_fell_ouside(being_in_focus: bool, message: String)  		 # essentially it fell outside of screen
 
 var being_in_focus = true
 
@@ -98,14 +98,13 @@ func _process(delta: float) -> void:
 		if movement_vector.y > 0:
 			# 1. check for current tile if this blob is inside a tile and down movement is inhibited
 			if (cur_tile != null && cur_tile.visible_down):
-				emit_signal("blob_movement_complete")
-				Log.debug("time blob_movement_complete: borderline inside tile")
+				emit_signal("blob_movement_complete", being_in_focus, "up->down: hitting inside its tile a down border")
+				being_in_focus = false
 			# 2. check if next field is Border
 			# remove the blob completely now from matrix and scene
 			elif (next_blob_matrix_entry is Border):
-				emit_signal("blob_fell_ouside")
-				emit_signal("blob_movement_complete")
-				Log.debug("time blob_movement_complete: blob fell outside")
+				emit_signal("blob_fell_ouside", being_in_focus, "up->down: falling outside")
+				being_in_focus = false
 				# remove itself from game tree !!!first free and then set to null, otherwise last ref is gone BEFORE the free!!!
 				queue_free()	
 				# remove itself from blob matrix
@@ -113,12 +112,12 @@ func _process(delta: float) -> void:
 			# 3. check if next field is a tile and the tile has a border on top
 			elif (tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y) != null && 
 				  tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y).visible_up):
-				emit_signal("blob_movement_complete")
-				Log.debug("time blob_movement_complete: borderline as outer edge in next tile")	
+				emit_signal("blob_movement_complete", being_in_focus, "up->down: next_matrix tile has up border")
+				being_in_focus = false
 			# 4. check if next field has no blob
 			elif (blob_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y) != null):
-					emit_signal("blob_movement_complete")
-					Log.debug("time blob_movement_complete: next cell has already a blob")
+					emit_signal("blob_movement_complete", being_in_focus, "up->down: next field already has a blob")
+					being_in_focus = false
 			# 5. movement allowed
 			else:
 				position += movement_vector * blob_size
@@ -129,14 +128,13 @@ func _process(delta: float) -> void:
 		if movement_vector.y < 0:
 			# 1. check for current tile if this blob is inside a tile and up movement is inhibited
 			if (cur_tile != null && cur_tile.visible_up):
-				emit_signal("blob_movement_complete")
-				Log.debug("time blob_movement_complete: borderline inside tile")
+				emit_signal("blob_movement_complete", being_in_focus, "down->up: hitting inside its tile a down border")
+				being_in_focus = false
 			# 2. check if next field is Border
 			# remove the blob completely now from matrix and scene
 			elif (next_blob_matrix_entry is Border):
-					emit_signal("blob_fell_ouside")
-					emit_signal("blob_movement_complete")
-					Log.debug("time blob_movement_complete: blob fell outside")
+					emit_signal("blob_fell_ouside", being_in_focus, "down->up: falling outside")
+					being_in_focus = false
 					# remove itself from game tree !!!first free and then set to null, otherwise last ref is gone BEFORE the free!!!
 					queue_free()
 					# remove itself from blob matrix
@@ -144,13 +142,12 @@ func _process(delta: float) -> void:
 			# 3. check if next field is a tile and the tile has a border on bottom
 			elif (tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y) != null && 
 				  tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y).visible_down):
-					emit_signal("blob_movement_complete")
-					Log.debug("time blob_movement_complete: borderline as outer edge in next tile")
-			
+					emit_signal("blob_movement_complete", being_in_focus, "down->up: next_matrix tile has up border")
+					being_in_focus = false		
 			# 4. check if next field has no blob
 			elif (blob_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y) != null):
-					emit_signal("blob_movement_complete")
-					Log.debug("time blob_movement_complete: next cell has already a blob")
+					emit_signal("blob_movement_complete", being_in_focus, "down->up: next field already has a blob")
+					being_in_focus = false
 			# 5. movement allowed
 			else:
 				position += movement_vector * blob_size

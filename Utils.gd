@@ -45,6 +45,7 @@ static func print_tile_blob_matrix(tile_array: Array2D, blob_array: Array2D) -> 
 			elif tile_array.g(col, row) is Tile and blob_array.g(col, row) is Blob: out+= "X"
 			else: out+="e"
 		out += "\n"
+	out += "\n\n"
 	return out
 
 static func get_current_datetime_ms() -> String:

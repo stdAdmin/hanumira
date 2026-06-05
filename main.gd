@@ -51,6 +51,8 @@ var cur_blob_down2up = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+		# notification for resize events of the screen
+		get_window().size_changed.connect(_on_window_resized)
 		#Utils.print_debug_completion_array(16, 14, gamefield_scenarios.convert_scenarios_in_true_arrays(14, 14, gamefield_scenarios.scenario_1))
 		tile_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
 		blob_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
@@ -58,6 +60,9 @@ func _ready() -> void:
 	
 		check_parameters()
 		spawn_tile()
+
+func _on_window_resized():
+	Log.debug(str("New size:", get_window().size, " with DPI", DisplayServer.screen_get_dpi()))
 
 func _draw():
 	# draw the raster
@@ -89,12 +94,12 @@ func _draw():
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	# even "hanging" tiles/blobs can send a movement complete signals
-	# to avoid the trigger of tons of new spawning here is the sync point to merge all those events TODO: parallelism sync is not fully clear
-	if received_tile_blob_signal:
-		checkForTileBlobCompletion()
-		received_tile_blob_signal = false
-		spawn_tile()
+	## even "hanging" tiles/blobs can send a movement complete signals
+	## to avoid the trigger of tons of new spawning here is the sync point to merge all those events TODO: parallelism sync is not fully clear
+	#if received_tile_blob_signal:
+		#checkForTileBlobCompletion()
+		#received_tile_blob_signal = false
+		#spawn_tile()
 	pass
 	
 func spawn_tile():
@@ -141,6 +146,7 @@ func spawn_tile():
 		blob.gamefield_left_upper_start = gamefield_left_upper_start
 		blob.blob_size = Vector2(tile_blob_size, tile_blob_size)
 		blob.blob_movement_complete.connect(_on_blob_movement_complete)
+		blob.blob_fell_ouside.connect(_on_blob_fell_ouside)
 		if active_tile_blob == 2:	
 			cur_blob_up2down = blob
 			blob.movement_vector = movement_vector_up2down
@@ -157,18 +163,22 @@ func spawn_tile():
 	
 
 		
-func _on_tile_movement_complete(direction: Vector2):
-	Log.debug("got tile complete signal")
-	received_tile_blob_signal = true
-	#checkForTileBlobCompletion()
-	#spawn_tile()
+func _on_tile_movement_complete(being_in_focus: bool, data: String):
+	Log.debug(str("got tile complete signal:", data, " being_in_focus:", being_in_focus))
+	#received_tile_blob_signal = true
+	checkForTileBlobCompletion()
+	if (being_in_focus): spawn_tile()
 
 # can be that it is stuck or fell outside, trigger next
-func _on_blob_movement_complete():
-	Log.debug("got blob complete signal")
-	received_tile_blob_signal = true
-	#checkForTileBlobCompletion()
-	#spawn_tile()
+func _on_blob_movement_complete(being_in_focus: bool, data: String):
+	Log.debug(str("got blob complete signal:", data, " being_in_focus:", being_in_focus))
+	#received_tile_blob_signal = true
+	checkForTileBlobCompletion()
+	if (being_in_focus): spawn_tile()
+
+func _on_blob_fell_ouside(being_in_focus: bool, data: String):
+	Log.debug(str("got blob fell outside signal:", data, " being_in_focus:", being_in_focus))
+	if (being_in_focus): spawn_tile()
 
 func checkForTileBlobCompletion():
 	var array = Utils.create_debug_completion_array(gamefield_x_size, gamefield_y_size)
@@ -176,7 +186,7 @@ func checkForTileBlobCompletion():
 	# go through the inner columns and check if there 
 	var l_inner_col = gamefield_x_size/2 - 1
 	var r_inner_col = gamefield_x_size/2
-	Log.debug(str("left inner termination=", l_inner_col, " right inner termination=", r_inner_col))
+	#Log.debug(str("left inner termination=", l_inner_col, " right inner termination=", r_inner_col))
 	for row in range(1, gamefield_y_size-2):
 		var cur_tile = tile_matrix.g(l_inner_col, row)
 		var cur_blob = blob_matrix.g(l_inner_col, row)
@@ -202,8 +212,6 @@ func checkForTileBlobCompletion():
 				blob_to_be_removed.queue_free()	
 				tile_matrix.s(col, row, null)
 				blob_matrix.s(col, row, null)
-
-	
 	print(Utils.print_tile_blob_matrix(tile_matrix, blob_matrix))			
 
 # assumes that the given position has been approved to be removed!
