@@ -14,6 +14,7 @@ const gamefield_left_upper_start = Vector2(0,0)
 
 ############ tiles & blobs ##############
 var active_tile_blob = 1
+var received_tile_blob_signal = false
 
 ############### tiles general #####################
 const NewTile = preload("res://tile.tscn")
@@ -88,6 +89,12 @@ func _draw():
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	# even "hanging" tiles/blobs can send a movement complete signals
+	# to avoid the trigger of tons of new spawning here is the sync point to merge all those events TODO: parallelism sync is not fully clear
+	if received_tile_blob_signal:
+		checkForTileBlobCompletion()
+		received_tile_blob_signal = false
+		spawn_tile()
 	pass
 	
 func spawn_tile():
@@ -152,14 +159,16 @@ func spawn_tile():
 		
 func _on_tile_movement_complete(direction: Vector2):
 	Log.debug("got tile complete signal")
-	checkForTileBlobCompletion()
-	spawn_tile()
+	received_tile_blob_signal = true
+	#checkForTileBlobCompletion()
+	#spawn_tile()
 
 # can be that it is stuck or fell outside, trigger next
 func _on_blob_movement_complete():
 	Log.debug("got blob complete signal")
-	checkForTileBlobCompletion()
-	spawn_tile()
+	received_tile_blob_signal = true
+	#checkForTileBlobCompletion()
+	#spawn_tile()
 
 func checkForTileBlobCompletion():
 	var array = Utils.create_debug_completion_array(gamefield_x_size, gamefield_y_size)
