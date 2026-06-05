@@ -50,6 +50,9 @@ var cur_blob_down2up = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+		#Utils.print_debug_completion_array(16, 14, gamefield_scenarios.convert_scenarios_in_true_arrays(14, 14, gamefield_scenarios.scenario_1))
+	
+	
 		check_parameters()
 		tile_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
 		blob_matrix = Utils.create_matrix(gamefield_x_size,gamefield_y_size)
@@ -166,8 +169,8 @@ func checkForTileBlobCompletion():
 	var r_inner_col = gamefield_x_size/2
 	Log.debug(str("left inner termination=", l_inner_col, " right inner termination=", r_inner_col))
 	for row in range(1, gamefield_y_size-2):
-		var cur_tile: Tile = tile_matrix[l_inner_col][row]
-		var cur_blob: Blob = blob_matrix[l_inner_col][row]
+		var cur_tile = tile_matrix[l_inner_col][row] # can be null or whatever, so don't cast!
+		var cur_blob = blob_matrix[l_inner_col][row] # can be null or whatever, so don't cast!
 		if (cur_tile is Tile and !cur_tile.visible_right and cur_blob is Blob):
 			array [l_inner_col][row] = "x"
 			recursive(l_inner_col, row, array)			

@@ -34,6 +34,16 @@ static func print_debug_completion_array(rows: int, cols: int, array: Array[Arra
 		out += "\n"
 	return out
 
+#static func print_debug_completion_array(cols: int, rows: int, array: Array[Array]) -> String:
+	#var out = "\n"
+	#for row in range(0, rows):
+		#out +=  "%02d" % row
+		#for col in range(0, cols):
+			#if row == 0 or row == rows-1 or col == 0 or col == cols-1: out += "% "
+			#else: out += array[col][row]
+		#out += "\n"
+	#return out
+
 # border (only when both have it) = O
 # empty (both) = -
 # only tile = t

@@ -1,7 +1,7 @@
 class_name Log
 
-const DEBUG_LOGGING := false
-#const DEBUG_LOGGING := true
+#const DEBUG_LOGGING := false
+const DEBUG_LOGGING := true
 
 #const INFO_LOGGING := false
 const INFO_LOGGING := true

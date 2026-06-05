@@ -50,7 +50,7 @@ func _process(delta: float) -> void:
 				# 1. reached border, remove the blob, inform score
 				if next_blob_matrix_entry is Border:
 					# simply do nothing, not allowed
-					Log.debug("joy next blob outside")	
+					Log.debug("Not allowed to move a blob into the right/left borders")	
 				# 2. field occupied				
 				elif next_blob_matrix_entry != null:  
 					Log.debug("joy next blob field already occupied by other blob ")                        
@@ -60,11 +60,11 @@ func _process(delta: float) -> void:
 					if x_motion == 1:
 						if cur_tile != null && cur_tile.visible_right:
 							# simply do nothing, not allowed
-							pass							
+							Log.debug ("Not allowed BLOB when left->right allowed: cur_tile in which this blob is has a border on the right and you cannot move through that by going right")						
 						elif (tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] !=null &&
 							  tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y].visible_left):  
 							# simply do nothing, not allowed
-							pass			
+							Log.debug ("Not allowed BLOB when left->right allowed: the tile right to the blob has a border on its left and you cannot move through that by going right")			
 						else:
 							position += Vector2(x_motion, 0) * blob_size
 							blob_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
@@ -74,11 +74,11 @@ func _process(delta: float) -> void:
 					elif x_motion == -1:
 						if cur_tile != null && cur_tile.visible_left:
 							# simply do nothing, not allowed
-							pass									
+							Log.debug ("Not allowed BLOB when right->left allowed: cur_tile in which this blob is has a border on the left and you cannot move through that by going left")							
 						elif (tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y] != null &&
 							   tile_matrix_ref[next_joy_matrix_pos.x][next_joy_matrix_pos.y].visible_right):  
 							# simply do nothing, not allowed
-							pass		
+							Log.debug ("Not allowed BLOB when right->left allowed: the tile left to the blob has a border on its right and you cannot move through that by going left")		
 						else:
 							position += Vector2(x_motion, 0) * blob_size
 							blob_matrix_ref[cur_matrix_pos.x][cur_matrix_pos.y] = null
