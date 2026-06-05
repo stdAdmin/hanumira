@@ -48,7 +48,7 @@ func _process(delta: float) -> void:
 				var next_blob_matrix_entry = blob_matrix_ref.g(next_joy_matrix_pos.x, next_joy_matrix_pos.y)
 				# check endpos
 				# 1. reached border, remove the blob, inform score
-				if is_instance_valid(next_blob_matrix_entry) and next_blob_matrix_entry is Border:
+				if next_blob_matrix_entry is Border:
 					# simply do nothing, not allowed
 					Log.debug("Not allowed to move a blob into the right/left borders")	
 				# 2. field occupied				
@@ -102,14 +102,14 @@ func _process(delta: float) -> void:
 				Log.debug("time blob_movement_complete: borderline inside tile")
 			# 2. check if next field is Border
 			# remove the blob completely now from matrix and scene
-			elif (is_instance_valid(next_blob_matrix_entry) and next_blob_matrix_entry is Border):
+			elif (next_blob_matrix_entry is Border):
 				emit_signal("blob_fell_ouside")
 				emit_signal("blob_movement_complete")
 				Log.debug("time blob_movement_complete: blob fell outside")
+				# remove itself from game tree !!!first free and then set to null, otherwise last ref is gone BEFORE the free!!!
+				queue_free()	
 				# remove itself from blob matrix
 				blob_matrix_ref.s(cur_matrix_pos.x, cur_matrix_pos.y, null)
-				# remove itself from game tree
-				queue_free()	
 			# 3. check if next field is a tile and the tile has a border on top
 			elif (tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y) != null && 
 				  tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y).visible_up):
@@ -133,14 +133,14 @@ func _process(delta: float) -> void:
 				Log.debug("time blob_movement_complete: borderline inside tile")
 			# 2. check if next field is Border
 			# remove the blob completely now from matrix and scene
-			elif (is_instance_valid(next_blob_matrix_entry) and next_blob_matrix_entry is Border):
+			elif (next_blob_matrix_entry is Border):
 					emit_signal("blob_fell_ouside")
 					emit_signal("blob_movement_complete")
 					Log.debug("time blob_movement_complete: blob fell outside")
+					# remove itself from game tree !!!first free and then set to null, otherwise last ref is gone BEFORE the free!!!
+					queue_free()
 					# remove itself from blob matrix
 					blob_matrix_ref.s(cur_matrix_pos.x, cur_matrix_pos.y, null)
-					# remove itself from game tree
-					queue_free()
 			# 3. check if next field is a tile and the tile has a border on bottom
 			elif (tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y) != null && 
 				  tile_matrix_ref.g(next_blob_matrix_pos.x, next_blob_matrix_pos.y).visible_down):

@@ -91,7 +91,7 @@ func _process(delta: float) -> void:
 	pass
 	
 func spawn_tile():
-	#Log.debug(Utils.print_tile_blob_matrix(gamefield_x_size, gamefield_y_size, tile_matrix, blob_matrix))	
+	Log.debug(str("Spawn_Tile ", active_tile_blob, " at time ", Utils.get_current_datetime_ms()))	
 	if active_tile_blob == 1 || active_tile_blob == 3:
 		var tile: Tile = NewTile.instantiate()
 		# percentage distribution of tile type (border lines)
@@ -169,8 +169,8 @@ func checkForTileBlobCompletion():
 	var r_inner_col = gamefield_x_size/2
 	Log.debug(str("left inner termination=", l_inner_col, " right inner termination=", r_inner_col))
 	for row in range(1, gamefield_y_size-2):
-		var cur_tile = tile_matrix.g(l_inner_col, row) # can be null or whatever, so don't cast!
-		var cur_blob = blob_matrix.g(l_inner_col, row) # can be null or whatever, so don't cast!
+		var cur_tile = tile_matrix.g(l_inner_col, row)
+		var cur_blob = blob_matrix.g(l_inner_col, row)
 		if (cur_tile is Tile and !cur_tile.visible_right and cur_blob is Blob):
 			array.s(l_inner_col, row, "x")
 			recursive(l_inner_col, row, array)			
@@ -188,18 +188,18 @@ func checkForTileBlobCompletion():
 				var blob_to_be_removed: Blob = blob_matrix.g(col, row)		
 				var t = "tile&Blob to be removed x=%s" % col % " y=%s" % row % " tile:%s" % (tile_to_be_removed!=null) % " blob:%s" % (blob_to_be_removed!=null) 
 				Log.debug(t)
-				tile_matrix.s(col, row, null)
-				blob_matrix.s(col, row, null)
-				# remove itself from game tree
+				# remove itself from game tree, !!!first free and then set to null, otherwise last ref is gone BEFORE the free!!!
 				tile_to_be_removed.queue_free()		
 				blob_to_be_removed.queue_free()	
+				tile_matrix.s(col, row, null)
+				blob_matrix.s(col, row, null)
+
 	
 	print(Utils.print_tile_blob_matrix(tile_matrix, blob_matrix))			
-	#print(Utils.print_debug_completion_array(array))	
-	
 
 # assumes that the given position has been approved to be removed!
 func recursive(col: int, row: int, array: Array2D):
+	Log.debug(str("recursive start at a completed one at col:", col, " row:", row))
 	# current
 	var tc: Tile = tile_matrix.g(col, row)	
 	############# left ####################

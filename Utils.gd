@@ -47,4 +47,16 @@ static func print_tile_blob_matrix(tile_array: Array2D, blob_array: Array2D) -> 
 		out += "\n"
 	return out
 
-		
+static func get_current_datetime_ms() -> String:
+	var unix_ms := int(Time.get_unix_time_from_system() * 1000.0)
+	var dt := Time.get_datetime_dict_from_system()
+
+	return "%04d-%02d-%02d %02d:%02d:%02d.%03d" % [
+		dt.year,
+		dt.month,
+		dt.day,
+		dt.hour,
+		dt.minute,
+		dt.second,
+		unix_ms % 1000
+	]
